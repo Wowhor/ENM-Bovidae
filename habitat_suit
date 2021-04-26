@@ -56,7 +56,7 @@ ENMTML(pred_dir = d_env,
        part = c(method='BOOT', replicates='10', proportion='0.75'),
        save_part = FALSE, 
        save_final = TRUE,
-       algorithm = c("BIO","GLM","GAM","SVM","RDF","MXD","MLK","GAU"),      #algorithyms for creating ensembles
+       algorithm = c("BIO","GLM","GAM","SVM","RDF","MXD","MLK","GAU"),     
        thr=c(type=c('LPT', 'MAX_TSS', 'MAX_KAPPA','JACCARD','SORENSEN')), 
        msdm = NULL,
        ensemble=c(method=c('MEAN','W_MEAN', 'PCA','SUP'), metric='TSS'), 
@@ -100,7 +100,9 @@ ENMTML(pred_dir = d_env,
        cores = 2)
 
 #==============================
-#3) Buffalo
+
+#3) Wild water buffalo (Bubalus arnee)
+
 #species occurrence data (species,x,y)
 d_occ<- file.path(d_ex, 'buffalo_tot09112020.txt')
 
@@ -134,7 +136,9 @@ ENMTML(pred_dir = d_env,
        cores = 2)
 
 #==============================
-#4)mainland serow
+
+#4) Mainland serow (Capricornis sumatraensis)
+
 #species occurrence data (species,x,y)
 d_occ<- file.path(d_ex, 'serow_tot27102020_rmIndo.txt')
 
@@ -167,7 +171,9 @@ ENMTML(pred_dir = d_env,
        extrapolation = FALSE, 
        cores = 2)
 #===============================
-#5) goral
+
+#5) Chinese goral (Naemorhedus griseus)
+
 #species occurrence data (species,x,y)
 d_occ<- file.path(d_ex, 'goral_tot27102020.txt')
 
