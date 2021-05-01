@@ -1,5 +1,6 @@
-#Data combining for 5 wild Bovidae species-create  data frame and plot PCA
-#Data frame contain: 25environmental variables, habitat suitability (ensemble), binary maps(0,1), observations, PCA -- for each species
+#Combine and create data frame for 5 wild Bovidae species and plot PCA
+
+#Data frames contain: 25 environmental variables, habitat suitability (ensemble), binary maps(0,1), observation points, PCA -- for each species
 
 #30 Apr 2021
 #R version 4.0.2 
@@ -8,37 +9,35 @@ library(raster)
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
-library(rgdal)
-library(viridis)
-library(RColorBrewer)
 library(sf)
 library(tmap)
 
-#making raster stack
-path<-"C:/Users/whorpien/OneDrive - Massey University/R/enmtml/env_banteng_cr"
+#import environmental data and create raster stack
+path<-"C:/Users/whorpien/OneDrive - Massey University/R/enmtml/env_banteng_cr" 
 setwd(path)
 var <- dir(pattern = ".tif", recursive = TRUE) %>% 
   raster::stack()
 names(var)
 
-#import ENM 
+#import ENM (ensemble)
 gaur_ens<-raster("/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultGaur_20201014_cellsize24var/Ensemble/W_MEAN/bos_gaurus.tif")
 bt_ens<-raster("/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultBanteng_20210428_ens2/Ensemble/SUP/bos_javanicus.tif")
 buf_ens<-raster("/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultBuffalo_20201112/Ensemble/PCA/bubalus_arnee.tif")
 serow_ens<-raster("/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultSerowThar_20201118_rmIdohlogfill/Ensemble/W_MEAN/mainland_serow.tif")
 goral_ens<-raster("/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultGoral_20201127_hlogfill_wm/Ensemble/W_MEAN/naemorhedus_griseus.tif")
 
-#extract points from ENM raster and merge with data frame
+#extract points from ENM raster and bind with environmental variables
 en<- rasterToPoints(bt_ens, spatial=TRUE)
 head(en)
 
-#combind variables and ENM 
 en2<- data.frame(en)%>%
       cbind(raster::extract(var, en, df = T))
 str(en2)
+
+#select coordinates xy 
 xy<-dplyr::select(en2,x,y)
 
-#import raw observational data--combine with observation data
+#import observational data & combine with observational data
 ob<-read.table("/Users/whorpien/OneDrive - Massey University/R/enmtml/banteng03022021.txt",
                 header = T,sep = "\t" ) %>%dplyr::select(x,y)
 str(ob)
@@ -46,16 +45,17 @@ obr<-raster::rasterize(base::cbind(ob$x, ob$y), var, field = 1, background = 0)
 en3<-cbind(raster::extract(obr, xy, df = T),en2)
 str(en3)
 
-##########check obs points####################
-boundary<-readOGR("/Users/whorpien/OneDrive - Massey University/R/enmtml/accbanteng",
-                  "banteng6_edit")
+##########check observation points####################
+#Species accessible area
+boundary<-shapefile("C:/Users/whorpien/OneDrive - Massey University/R/enmtml/accbanteng/banteng6_edit.shp")
 plot(boundary)
 
 test<-en3[en3$layer==1,] %>%
   select(x,y) %>%
   st_as_sf(coords = c('x', 'y'),  crs="+init=epsg:4326 ")
 
-tm_shape(boundary)+tm_fill(col="grey90")+
+tm_shape(boundary)+
+  tm_fill(col="grey95")+
   tm_borders(col="grey40",lwd=0.1)+
 tm_shape(test)+
   tm_dots(size = 0.07)
@@ -66,9 +66,9 @@ setwd("/Users/whorpien/OneDrive - Massey University/enmtml_result/binary")
 f <- intersect(list.files(pattern = "_MXTSS"), 
                list.files(pattern = "tif"))
 f
-r <- raster(f[2]) #species number from file lists
+r <- raster(f[2]) #choose number from the species list
 r
-en4<-base::cbind(raster::extract(r, xy, df = T),en3)#making as a dataframe
+en4<-base::cbind(raster::extract(r, xy, df = T),en3) #creating dataframe
 str(en4)
 
 #bind with pca
@@ -92,6 +92,11 @@ en6<-en6 %>%
   dplyr::rename( "bin" = "bos_javanicus_MXTSS", #predicted binary map (0,1)
           "obsv" = "layer",                     #observation (0,1)
           "suit" = "bos_javanicus")             #habitat suitability
+
+#change data type integer/number to factor
+en6$bin<-as.factor(as.integer(en6$bin))   #change int to factor
+en6$obsv<-as.factor(as.integer(en6$obsv)) #change int to factor
+
 #create new colum called ob.bi (combind observation absence-presence and predicted binary map absence-presence, use paste combine value in colums
 en6$ob.bi<-paste(en6$obsv,en6$bin,sep="")
 en6$ob.bi<-as.factor(as.character(en6$ob.bi))
@@ -100,10 +105,6 @@ summary(en6)
 
 #if there's NA
 en6$obsv[is.na(df$obsv)] <- 0            #replace obs NA with zero
-
-#change data type integer/number to factor
-en6$bin<-as.factor(as.integer(en6$bin))   #change int to factor
-en6$obsv<-as.factor(as.integer(en6$obsv)) #change int to factor
 
 str(en6)
 str(obr)
