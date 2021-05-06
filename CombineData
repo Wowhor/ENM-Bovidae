@@ -13,44 +13,59 @@ library(sf)
 library(tmap)
 
 #import environmental variables and create raster stack
-path<-"/Users/whorpien/OneDrive - Massey University/R/enmtml/envgaur" 
+path<-"/Users/whorpien/OneDrive - Massey University/R/enmtml/envbanteng" 
 setwd(path)
 var <- dir(pattern = ".tif", recursive = TRUE) %>% 
   raster::stack()
 names(var)
 
 #import ENM (ensemble)
-gaur_ens<-raster("C:/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultGaur_20210502_25envi/Ensemble/PCA/bos_gaurus.tif")
-bt_ens<-raster("C:/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultBanteng_20210428_ens2/Ensemble/SUP/bos_javanicus.tif")
-buf_ens<-raster("C:/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultBuffalo_20201112/Ensemble/PCA/bubalus_arnee.tif")
-serow_ens<-raster("C:/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultSerowThar_20201118_rmIdohlogfill/Ensemble/W_MEAN/mainland_serow.tif")
-goral_ens<-raster("C:/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultGoral_20201127_hlogfill_wm/Ensemble/W_MEAN/naemorhedus_griseus.tif")
+gaur_ens<-raster("C:/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultGaur20210502/Ensemble/PCA/bos_gaurus.tif")
+bt_ens<-raster("/Users/whorpien/OneDrive - Massey University/R/enmtml/enmtml_result/ResultBanteng20210505/Ensemble/PCA/bos_javanicus.tif")
+buf_ens<-raster("C:/Users/whorpien/OneDrive - Massey University/R/enmtml/enmtml_result/ResultBuffalo20210505/Ensemble/PCA/bubalus_arnee.tif")
+serow_ens<-raster("C:/Users/whorpien/OneDrive - Massey University/R/enmtml/enmtml_result/ResultThar20210505/Ensemble/PCA/mainland_serow.tif")
+goral_ens<-raster("C:/Users/whorpien/OneDrive - Massey University/R/enmtml/enmtml_result/ResultGoral20210503/Ensemble/PCA/naemorhedus_griseus.tif")
 
-#extract points from ENM raster -> bind with environmental variables
-en<- rasterToPoints(gaur_ens, spatial=TRUE)
-head(en)
+#import binary map 
+setwd("/Users/whorpien/OneDrive - Massey University/R/enmtml/enmtml_result/binary")
+f <- intersect(list.files(pattern = "_MXTSS"), 
+               list.files(pattern = "tif"))
+f
+r <- raster(f[2]) #choose species number from list
+r
 
-#select coordinates xy 
-en2<- data.frame(en)%>%
-      cbind(raster::extract(var, en, df = T))
-str(en2)
-xy<-dplyr::select(en2,x,y)
+#import ENMTML PCA & create raster stack
+setwd("/Users/whorpien/OneDrive - Massey University/R/enmtml/enmtml_result/ResultBanteng20210505/PCA")
+pca <- dir(pattern = "tif", recursive = TRUE) %>% 
+  raster::stack()
 
 #import observational data -> create raster 
-ob<-read.table("C:/Users/whorpien/OneDrive - Massey University/R/enmtml/gaur01252021.txt",
-                header = T,sep = "\t" ) %>% 
-                dplyr::select(x,y)
+ob<-read.table("C:/Users/whorpien/OneDrive - Massey University/R/enmtml/banteng03022021.txt",
+               header = T,sep = "\t" ) %>% 
+  dplyr::select(x,y)
 str(ob)
 
-#create raster (1=presence, 0=absence)
+#extract points from ENM raster
+en<- rasterToPoints(bt_ens, spatial=TRUE)
+head(en)
+
+#extract environmental raster => en2
+en2<- data.frame(en)%>%
+  cbind(raster::extract(var, en, df = T))
+str(en2)
+
+xy<-dplyr::select(en2,x,y) # select x, y
+
+#create raster for observation (1=presence, 0=absence)
 obr<-raster::rasterize(base::cbind(ob$x, ob$y), var, field = 1, background = 0)
 
-#bind with en2
+#bind  with environmental data => en3
 en3<-cbind(raster::extract(obr, xy, df = T),en2)
-table(en3$layer) #check observation number, observation column name = layer
+
+table(en3$layer) #check observation number
 
 ##########check observation points####################
-boundary<-shapefile("C:/Users/whorpien/OneDrive - Massey University/R/enmtml/accgaur/wwf_eco_gaur_dissolve17082020.shp")
+boundary<-shapefile("C:/Users/whorpien/OneDrive - Massey University/R/enmtml/accbanteng/banteng_05052021.shp")
 plot(boundary)
 
 test<-en3[en3$layer==1,] %>%
@@ -59,28 +74,15 @@ test<-en3[en3$layer==1,] %>%
 
 tm_shape(boundary)+tm_fill(col="grey95")+
   tm_borders(col="grey40",lwd=0.1)+
-tm_shape(test)+
+  tm_shape(test)+
   tm_dots(size = 0.07)
 ###############################################
 
-#extract binary map 
-setwd("C:/Users/whorpien/OneDrive - Massey University/enmtml_result/binary")
-f <- intersect(list.files(pattern = "_MXTSS"), 
-               list.files(pattern = "tif"))
-f
-r <- raster(f[1]) #choose species number from list
-r
-
-#bind with en3
+# bind binary map with  env, obs => en4
 en4 <- base::cbind(raster::extract(r, xy, df = T),en3)
 str(en4) # binary map column name = .._MXTSS
 
-#combine ENMTML PCA
-setwd("C:/Users/whorpien/OneDrive - Massey University/enmtml_result/ResultGaur_20210502_25envi/PCA")
-pca <- dir(pattern = "tif", recursive = TRUE) %>% 
-  raster::stack()
-
-# bind with en4
+# bind pca with env, obs, binary map => en5
 en5<-base::cbind(raster::extract(pca, xy, df = T),en4) 
 str(en5)
 
@@ -88,7 +90,7 @@ str(en5)
 en5<-dplyr::select(en5, -ID,-optional)
 
 #add species column
-en5$sp<-c("bos_gaurus")
+en5$sp<-c("bos_javanicus")
 
 #rename
 #bin=binary map
@@ -96,9 +98,9 @@ en5$sp<-c("bos_gaurus")
 #suit = habitat suitability
 
 en5<-en5 %>% 
-  dplyr::rename( "bin" = "bos_gaurus_MXTSS",
-          "obsv" = "layer",
-          "suit" = "bos_gaurus")
+  dplyr::rename( "bin" = "bos_javanicus_MXTSS",
+                 "obsv" = "layer",
+                 "suit" = "bos_javanicus")
 str(en5)
 
 #change binary and observation to factor
@@ -111,15 +113,15 @@ en5$obsv<-as.factor(as.integer(en5$obsv)) #change int to factor
 # 10 presence-obs, absence-predicted
 # 11 presence-obs, presence-predicted
 
-en4$ob.bi<-paste(en4$obsv,en4$bin,sep="")
-en4$ob.bi<-as.factor(as.character(en4$ob.bi))
+en5$ob.bi<-paste(en5$obsv,en5$bin,sep="")
+en5$ob.bi<-as.factor(as.character(en5$ob.bi))
 
 #check ob.bi number
-table(en4$ob.bi)
+table(en5$ob.bi)
 
 ##########check ob.bi 11-10 ####################
-test2<-en4%>% filter(ob.bi==11 | ob.bi==10)%>%            #filter ob.bi 11 OR 10 (observations)
-st_as_sf(coords = c('x', 'y'),  crs="+init=epsg:4326 ")
+test2<-en5%>% filter(ob.bi==11 | ob.bi==10)%>%            #filter ob.bi 11 OR 10 (observations)
+  st_as_sf(coords = c('x', 'y'),  crs="+init=epsg:4326 ")
 table(test2$ob.bi) 
 
 tm_shape(boundary)+tm_fill(col="grey90")+
@@ -127,12 +129,12 @@ tm_shape(boundary)+tm_fill(col="grey90")+
   tm_shape(test2)+ 
   tm_dots(size = 0.1, col = "ob.bi",
           palette = c("plasma"),#"plasma""#6699cc", "#cc79a7", "#f0e442"
-          title = "gaur obsv-predicted",
+          title = "banteng obsv-predicted",
           shape = 21)
 ###############################################
 
 #Save an object in RDS
-saveRDS(en5, file = "/Users/whorpien/OneDrive - Massey University/R/env_var/dfgaurv1.rds")
+saveRDS(en5, file = "/Users/whorpien/OneDrive - Massey University/R/enmtml/dfbantengv1.rds")
 #-----------------done with creating data set----------------------
 
 ################## plot PCA ##############################
@@ -160,18 +162,17 @@ mod1<-samp[samp$bin==1,]
 mod0<-samp[samp$bin==0,]
 str(mod1)
 str(mod0)
-mod01<-bind_rows(mod0,mod1)
-mod10<-bind_rows(mod1,mod0)
-str(mod01$ob.bi)
+
+mod10<-bind_rows(mod0,mod1)
+
 str(mod10$ob.bi)
-str(mod01)
 str(mod10)
 #check the number of ob.bi 10,11  mod10 == df
 table(df$ob.bi)
 table(mod10$ob.bi)
 
 #save mod10 as a sampling dataset 
-saveRDS(mod10, file = "/Users/whorpien/OneDrive - Massey University/R/env_var/dfsampgaur.rds")
+saveRDS(mod10, file = "/Users/whorpien/OneDrive - Massey University/R/enmtml/dfsampbanteng.rds")
 
 
 ######################create PCA biplot from environmental variables#############################
@@ -180,7 +181,7 @@ names(df)
 vpca<-df%>%dplyr::select(bio01, bio02, bio03, bio04,bio05, bio06, bio07, bio08, bio09,
                          bio10, bio11, bio12, bio13, bio14, bio15, bio16, bio17, bio18,
                          bio19, elev, hplog, land, ndvi, slope, water)
-                         
+
 #create pca matrix
 vpca_pr<-stats::prcomp(vpca, 
                        retx=T,
@@ -199,21 +200,22 @@ vexp<- data.frame(PC= 1:25,
                   var_explained=((vpca_pr$sdev)^2/sum((vpca_pr$sdev)^2))*100)
 vexp
 
-png(filename = "pca_barplotPC1_gaur.png",res=300, units = "cm", width= 20, height=15)
-barplot(vpca_pr$rotation[,1], main="PC 1 Loadings, Gaur", las=2)
+png(filename = "pca_barplotPC1_banteng.png",res=300, units = "cm", width= 20, height=15)
+barplot(vpca_pr$rotation[,1], main="PC 1 Loadings, banteng", las=2)
 dev.off()
-png(filename = "pca_barplotPC2_gaur.png",res=300, units = "cm", width= 20, height=15)
-barplot(vpca_pr$rotation[,2], main="PC 2 Loadings Plot, Gaur", las=2)
+
+png(filename = "pca_barplotPC2_banteng.png",res=300, units = "cm", width= 20, height=15)
+barplot(vpca_pr$rotation[,2], main="PC 2 Loadings Plot, banteng", las=2)
 dev.off()
 
 #bar plot explained variance
-png(filename = "pca_barplot_gaur.png",res=300, units = "cm", width= 20, height=15)
+png(filename = "pca_barplot_banteng.png",res=300, units = "cm", width= 20, height=15)
 
 barplot(vexp$var_explained~vexp$PC,
         ylim = c(0,60),
         xlab="Principal components",
         ylab="Variance explained (%)",
-        main="Gaur PCA variance explained",
+        main="banteng PCA variance explained",
         col=c("#333f48"))
 
 dev.off()
@@ -233,45 +235,6 @@ dev.off()
 getwd()
 
 #PCA biplot  
-b<-ggplot(mod10, aes(x = PC1, y = PC2)) +
-  theme_classic() +
-  geom_point(mapping = aes(color=obsv),
-             shape = 19,
-             stroke=0.5,
-             size = 4,
-             alpha = 1)+
-  scale_color_manual(name = "observation",
-                     values = c("0"="#D3D5D0","1"="#214d65")) 
-
-b2<-b+
-  geom_point(mapping = aes(fill = bin),
-             shape=23,
-             stroke=0.3,
-             size = 2,
-             alpha = 0.2)+
-  scale_fill_manual(name = "prediction",values = c("0"="#6C90B9","1"="#DD3C51"))+#893c47darkred#d8d7dfgrey#c6d6e3lightblue#f890a5
-  # Adjust alpha argument
-  guides(fill = guide_legend(override.aes = list(alpha = 0.7))) 
-
-b2 
-
-#with loadings arrows+
-b3<-b2+  geom_segment(data = loadings, 
-                      aes(x = 0, y = 0,
-                          xend = (PC1*16),
-                          yend = (PC2*16)), 
-                      arrow = arrow(length = unit(0.2, "cm")),
-                      color = "#000000") +
-        annotate("text", x = (loadings$PC1*20), y = (loadings$PC2*18),
-           label = loadings$Variables)+
-        ggtitle(label = "PCA: Mainland serow") 
-  
-
-b3
-
-
-ggsave("buffalo _pcaV01.png", plot=b3,width = 25, height = 20, units = "cm")
-
 #==========separate observation and bin===============
 library(ggrepel)
 str(samp)
@@ -287,68 +250,56 @@ b<-ggplot(samp, aes(x = PC1, y = PC2)) +
                      values = c("0"="#D3D5D0","1"="#2F638F")) #214d65navy #00af66lightgreen#dcd59ayellow#e9df97lightyello#009a44green #c6dae7light blue
 b
 bl<-b+geom_segment(data = loadings, 
-               aes(x = 0, y = 0,
-                   xend = (PC1*15),
-                   yend = (PC2*15)), 
-               arrow = arrow(length = unit(0.1, "cm")),
-               color = "#000000")+ 
+                   aes(x = 0, y = 0,
+                       xend = (PC1*15),
+                       yend = (PC2*15)), 
+                   arrow = arrow(length = unit(0.1, "cm")),
+                   color = "#000000")+ 
   geom_text_repel(data=loadings,aes(label = Variables,
                                     x=PC1*17,y=PC2*17),
                   size=3.5)#,nudge_x = .05,nudge_y=.05)
 
-  annotate("text", x = (loadings$PC1*1), y = (loadings$PC2*17),
-           label = loadings$Variables)
-  
-
-  geom_text(data=loadings,mapping=aes(label =Variables,
-                                      x=PC1*17.5,y=PC2*16),size=3)
 
 bl
 
-ggsave("pca_obsv_buf_V01.png", plot = bl, width = 35, height = 25, units = "cm")
+ggsave("pca_obsv_bt_V01.png", plot = bl, width = 35, height = 25, units = "cm")
 
 b2<-ggplot(mod10, aes(x = PC1, y = PC2)) +
-    theme_classic() +
-    geom_point(mapping = aes(color = bin),
-               shape = 19,
-               #stroke=0.5,
-               size = 2.5,
-               alpha = 0.8)+
+  theme_classic() +
+  geom_point(mapping = aes(color = bin),
+             shape = 19,
+             #stroke=0.5,
+             size = 2.5,
+             alpha = 0.8)+
   scale_color_manual(name = "prediction",values = c("0"="#D3D5D0","1"="#cc939e"))+#cb979d#CCAE42#d28a8f
   guides(fill = guide_legend(override.aes = list(alpha = 0.7)))
 
 b2l<-b2+geom_segment(data = loadings, 
-                      aes(x = 0, y = 0,
-                          xend = (PC1*15),
-                          yend = (PC2*15)), 
-                      arrow = arrow(length = unit(0.1, "cm")),
-                      color = "#000000") +
+                     aes(x = 0, y = 0,
+                         xend = (PC1*15),
+                         yend = (PC2*15)), 
+                     arrow = arrow(length = unit(0.1, "cm")),
+                     color = "#000000") +
   geom_text_repel(data=loadings,aes(label = Variables,
                                     x=PC1*17,y=PC2*17),
                   size=3.5)
-  #geom_text_repel(data=loadings,aes(label = Variables,
-  #                                  x=PC1*15,y=PC2*15),size=4)
-  annotate("text", x = (loadings$PC1*17), y = (loadings$PC2*17),
-           label = loadings$Variables)
-
 b2l
 
-ggsave("pca_predict_gaur_v1.png", plot = b2l, width = 35, height = 25, units = "cm")
+ggsave("pca_predict_bt_v1.png", plot = b2l, width = 35, height = 25, units = "cm")
 
 
 library(gridExtra)
-grid.arrange(b, b2, nrow = 1)
-
 g1<-grid.arrange(bl, b2l, ncol = 2,
                  heights=c(2,.1),
                  widths = c(2.7,2.7),
-                 top="Serow PCA")
+                 top="Banteng PCA")
 g1
 
-ggsave("pca_seploading_gaur_V01.png", plot = g1, width = 45, height = 25, units = "cm")
+ggsave("pca_seploading_banteng_V01.png", plot = g1, width = 45, height = 25, units = "cm")
 
 
 #==========combine ob&bin ==============
+#color options
 #color palette
 # install.packages("devtools")
 devtools::install_github("G-Thomson/Manu")
@@ -365,8 +316,8 @@ display.brewer.all(colorblindFriendly = TRUE)
 display.brewer.pal(n = 8, name = 'Purples')
 # Hexadecimal color specification 
 brewer.pal(n = 8, name = "Purples")
-
-
+#==============================================
+#plot pca
 bv<-ggplot(mod10, aes(x = PC1, y = PC2)) +
   theme_classic() +
   geom_point(mapping = aes(color=ob.bi),
@@ -380,20 +331,20 @@ bv<-ggplot(mod10, aes(x = PC1, y = PC2)) +
   scale_color_manual(values = c("00"="#E0ECF4","01"="#9EBCDA",
                                 "10"="#c6579a","11"="#6A51A3"))+
   guides(fill = guide_legend(override.aes = list(alpha = 1))) 
- 
+
 bv
 bv4<-bv+geom_segment(data = loadings, 
-               aes(x = 0, y = 0,
-                   xend = (PC1*15),
-                   yend = (PC2*15)), 
-               arrow = arrow(length = unit(0.1, "cm")),
-               color = "#000000") +
-  ggtitle(label = "Gaur PCA")+
+                     aes(x = 0, y = 0,
+                         xend = (PC1*15),
+                         yend = (PC2*15)), 
+                     arrow = arrow(length = unit(0.1, "cm")),
+                     color = "#000000") +
+  ggtitle(label = "Banteng PCA")+
   geom_text_repel(data=loadings,aes(label = Variables,
                                     x=PC1*17,y=PC2*17),
-                                    size=3.5)
-  
+                  size=3.5)
+
 bv4  
 #setwd("/Users/whorpien/Desktop/biplotpca/")
-ggsave("pca_gaur_1l_V01.png", plot=bv4,width = 30, height = 25, units = "cm")
+ggsave("pca_bt_1l_V01.png", plot=bv4,width = 30, height = 25, units = "cm")
 
