@@ -1,6 +1,6 @@
 #27 April 2021
 # ENM-Bovidae
-#code for create ENM of 5 wild Bovidae species using package ENMTML (link: https://github.com/andrefaa/ENMTML) 
+# Code for creating Ecological Niche Models (ENMs) of 5 wild Bovidae species using the package [ENMTML](https://github.com/andrefaa/ENMTML)
  * *Bos gaurus* 
  * *Bos javanicus*
  * *Bubalus arnee*
