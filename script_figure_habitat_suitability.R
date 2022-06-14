@@ -1,11 +1,12 @@
 ############# Figures plotting ####################
 # Mapping wild Bovidae in Thailand (5 species)  
-# Ref: https://geocompr.robinlovelace.net/adv-map.html
 
+# Code for plotting the figures:
 # 1) Study area (1. large accessibe area (LA), 2. species-specific study areas (SSA))
 # 2) Habitat suitability maps, 
 # 3) Binary habitat suitability map,  
-
+# 4) Richness map, Thailand
+# 5) Density plot (Suitability and IUCN protected area category)
 # load packages
 library(sf)
 library(raster)
@@ -793,3 +794,533 @@ print(p)
 dev.off()
 
 
+############## 4) Thailand richness map ###########
+# Cropping process can be skipped and use cropped .tif file (richness_5bov_mix_besttss_tha.tif) in result_sample
+###########################
+# import richness map
+r<-raster("/bovidae_enm/result_sample/richness_5bov_mix_besttss.tif")
+
+# crop with Thailand extent
+# import Thailand polygon
+tha<-shapefile("bovidae_enm/data_preparation/adm_border/gadm36_THA_0.shp")
+
+rn <- crop(r, extent(tha))%>% 
+  mask(tha)
+
+#Save as Geotiff with Thailand extent
+#setwd("/bovidae_enm/result_sample/")
+raster::writeRaster(x = rn, 
+                    filename=file.path( "richness_5bov_mix_besttss_tha.tif"), 
+                    bylayer = TRUE,
+                    overwrite = TRUE)
+###########################
+# import richness map, Thailand:
+rn<-raster("/bovidae_enm/result_sample/richness_5bov_mix_besttss_tha.tif")
+
+# import shapefiles:
+tha<-shapefile("bovidae_enm/data_preparation/adm_border/gadm36_THA_0.shp")
+sacc<-shapefile("/bovidae_enm/data_preparation/adm_border/acc_ecoregion_ssa_disv_cropfinalmodel.shp")
+accm<-shapefile("/bovidae_enm/data_preparation/acc/accmsdm/acc_ecoregion_msdm.shp")
+asia<-shapefile("/bovidae_enm/data_preparation/adm_border/asiamap3.shp")
+world<-shapefile("/bovidae_enm/data_preparation/adm_border/World_Countries__Generalized_.shp")
+pa<- shapefile("/bovidae_enm/data_preparation/PA_and_country/wdpa/AsiaSelect2_largeacc_wdpar_clean.shp")
+
+# focus on PA which species number = 4
+pa_path<-"/bovidae_enm/data_preparation/PA_and_country/wdpa/"
+
+dpky<-st_read(paste0(pa_path,"dpky.shp"))
+west<-st_read(paste0(pa_path,"western.shp"))
+east<-st_read(paste0(pa_path,"eastern.shp"))
+pk<-st_read(paste0(pa_path,"PhukhewNumNao.shp"))
+
+#fix invalid polygon error
+tmap_options(check.and.fix = TRUE)
+
+#color options
+#color=viridis
+#cc <- viridisLite::mako (vv,direction =1) 
+
+#color=mako with red
+#cc<-c("#0B0405FF","#395D9CFF", "#3E9BFEFF","#60CEACFF", "#DEF5E5FF","#c03100")
+
+#cc <- c("-Spectral")
+cc<-c("grey90","#3288BD","#99D594","#FEE08B","#FC8D59","#D53E4F")
+
+# Creating bbox for framing interesting PA: b1,2,3,4
+#Western
+b1 = st_bbox(c(xmin = 98, xmax = 99.55,
+               ymin = 14.1, ymax = 16.65),
+             crs = st_crs(4326)) %>% 
+  st_as_sfc()
+
+#Phu Khieo-Nam Nao
+b2 = st_bbox(c(xmin = 101.2, xmax = 102.05,
+               ymin = 15.82, ymax = 17.13),
+             crs = st_crs(4326)) %>% 
+  st_as_sfc()
+
+#Khoa Yai (DPKY)
+b3 = st_bbox(c(xmin = 101.1, xmax = 103.26,
+               ymin = 13.91, ymax = 14.67),
+             crs = st_crs(4326)) %>% 
+  st_as_sfc()
+
+#Eastern
+b4 = st_bbox(c(xmin = 101.56, xmax = 102.34,
+               ymin = 12.65, ymax = 13.55),
+             crs = st_crs(4326)) %>% 
+  st_as_sfc()
+
+#Creating richness map
+#with border for 4 PAs: pk, west, dpky, east (b1-b4)
+rnm <- 
+  tm_shape(pa,bbox=tha)+
+  tm_polygons(col="grey96")+
+  
+  tm_shape(rn,bbox=tha) +
+  tm_raster(style = "cat", 
+            palette = cc,
+            legend.show = TRUE,
+            title="Species numbers")+
+  
+  tm_shape(asia,bbox=tha) + tm_borders(col="grey10",lwd=1.2)+
+  
+  tm_shape(pa,bbox=tha) + tm_borders(col = "grey30", lwd = 1.2)+
+  
+  tm_shape(west) + tm_borders(lw=2.1, col="navy")+
+  tm_shape(pk) + tm_borders(lw=2.1, col="navy")+
+  tm_shape(dpky) + tm_borders(lw=2.1, col="navy")+
+  tm_shape(east) + tm_borders(lw=2.1, col="navy")+
+  
+  tm_shape(b1) + tm_borders(lw=1.6, col="navy")+
+  tm_shape(b2) + tm_borders(lw=1.6, col="navy")+
+  tm_shape(b3) + tm_borders(lw=1.6, col="navy")+
+  tm_shape(b4) + tm_borders(lw=1.6, col="navy")+
+  
+  tm_graticules(labels.size = 1.7,lines = FALSE)+
+  
+  #add legend
+  tm_add_legend(type=c("fill"),col = "grey96",border.col = "grey70",
+                labels=c("PA in bordering countries"),
+                size=5.5)+
+  tm_add_legend(type=c("line"), col = "navy",border.col = "navy",
+                labels=c("PA with species = 4"),border.lwd = 1,
+                size=7)+
+  
+  tm_layout (main.title= 'Bovidae species numbers, Thailand',
+             main.title.size = 2.2, 
+             main.title.position = c(0.1,0.98),
+             inner.margins= c(0,0,0,0), 
+             outer.margins = c(0.001,0.001,0.001,0.001),
+             legend.outside = F,
+             legend.title.size=2.5,
+             legend.text.size = 1.6,
+             legend.position=c(0.68, 0.01),
+             legend.bg.color = "white",
+             legend.height = -0.24,
+             legend.width = -0.29)+
+  
+  tm_compass(type="arrow",size= 1.5,text.size = 1.5 ,position=c(0.01,0.08))+
+  tm_scale_bar(breaks = c(0, 100, 200),position=c(0.01,0.01),text.size = 1.5)
+
+# proportion function of inset map; ref: https://github.com/Robinlovelace/geocompr/issues/532  
+norm_dim <- function(obj) {
+  bbox <- st_bbox(obj)
+  
+  width <- bbox[["xmax"]] - bbox[["xmin"]]
+  height <- bbox[["ymax"]] - bbox[["ymin"]]
+  
+  w <- width/max(width, height)
+  h <- height/max(width, height)
+  
+  c("w" = w, "h" = h)
+}
+
+#creating the main map and inset map viewports
+main_w <- norm_dim(rn)[["w"]]
+main_h <- norm_dim(rn)[["h"]]
+ins_w <- norm_dim(rn)[["w"]]
+ins_h <- norm_dim(rn)[["h"]]
+
+main_vp <- viewport(x = 0.5, y = 0.5,
+                    width = unit(main_w, "snpc"), height = unit(main_h, "snpc"),
+                    name = "main")
+# x = apart from left side, y = apart from bottom
+ins_vp<- viewport(x=0.78,y=0.32,
+                  width = unit(ins_w, "snpc") *0.3, 
+                  height = unit(ins_h, "snpc")*0.3)
+#creating polygon border
+bthai= bb_poly(tha,projection=4326)
+
+# creating inset map
+# import the richness map for viewport:
+rnla<-raster("/bovidae_enm/result_sample/richness_5bov_mix_besttss.tif")
+
+inmap_rn <-  
+  tm_shape(rnla)+
+  tm_raster(style = "cat", 
+            palette = cc,
+            legend.show = F)+
+  tm_shape(asia)+
+  tm_polygons(border.col = "grey5", 
+              lwd = 0.2,
+              alpha=0, 
+              border.alpha = 1)+
+  tm_shape(bthai) + tm_borders(lw=2, col="red")+
+  
+  tm_layout(inner.margins = c(0,0,0,0),outer.margins=c(0.003,0.003,0.003,0.003))
+
+# printing maps
+grid.newpage()
+
+print(rnm, vp = main_vp)
+pushViewport(main_vp)
+print(inmap_rn, vp = ins_vp)
+
+#tmap save
+
+#fig<-"/bovidae_enm/fig/"
+#setwd(fig)
+
+tmap_save(rnm,filename="Richness_thai.png",
+          dpi=600, insets_tm=inmap_rn, insets_vp=ins_vp,
+          height=40, width=25, units="cm")
+
+
+#plot :: zoom in PA 
+pam<-
+  tm_shape(asia,bbox=tha)+ 
+  tm_borders(col="grey10",lwd=1.5)+
+  tm_shape(pa,bbox=tha)+
+  tm_borders(col = "grey30",lwd = 1.6)
+
+#set result working directory
+setwd("/bovidae_enm/fig/")
+# Western PA
+inmap_b1<-
+  tm_shape(pa,bbox=b1)+
+  tm_polygons(col="grey96", border.col = "grey30",lwd=1.6)+
+  
+  tm_shape(rn,bbox=b1) +
+  tm_raster(style = "cat", 
+            palette = cc,
+            legend.show = F)+
+  pam+     
+  tm_shape(west) + tm_borders(lw=3.5, col="navy")+
+  
+  tm_layout(main.title="A) Western",
+            main.title.size = 2.3, 
+            main.title.position = c(0.01,0.98),
+            inner.margins= c(0,0,0,0), 
+            outer.margins = c(0,0,0,0))
+
+tmap_save(inmap_b1,filename="inmap_rn_Western_a1.png",
+          height=20, width=25, units="cm")
+
+#Phu Khieo-Nam Nao
+inmap_b2<-
+  tm_shape(pa,bbox=b2)+
+  tm_polygons(col="grey96")+
+  
+  tm_shape(rn,bbox=b2) +
+  tm_raster(style = "cat", 
+            palette = cc,
+            legend.show = F)+
+  pam+     
+  tm_shape(pk) + tm_borders(lw=3.5, col="navy")+
+
+  tm_layout(main.title="B) Phu Khieo-Nam Nao",
+            main.title.size = 2.7, 
+            main.title.position = c(0.01,0.98),
+            inner.margins= c(0,0,0,0), 
+            outer.margins = c(0,0,0,0))
+
+tmap_save(inmap_b2,filename="inmap_rn_PhuKhieo_NamNao_b2.png",
+          height=25, width=25, units="cm")
+
+#Dong Phayayen-Khao Yai
+inmap_b3<-
+  tm_shape(pa,bbox=b3)+
+  tm_polygons(col="grey96", border.col = "grey30",lwd=1.6)+
+  
+  tm_shape(rn,bbox=b3) +
+  tm_raster(style = "cat", 
+            palette = cc,
+            legend.show = F)+
+  
+  pam+
+  tm_shape(dpky) + tm_borders(lw=3.5, col="navy")+
+  
+  #tm_graticules(labels.size = 1,lines = FALSE)+
+  tm_layout(main.title="C) Dong Phayayen-Khao Yai",
+            main.title.size = 2.5, 
+            main.title.position = c(0.01,0.98),
+            inner.margins= c(0.005,0.005,0.005,0.005), 
+            outer.margins = c(0.005,0.005,0.005,0.005))
+
+tmap_save(inmap_b3,filename="inmap_rn_DPKY_c1.png",
+          height=20, width=30, units="cm")
+
+#Eastern PA
+inmap_b4<-
+  tm_shape(pa,bbox=b4)+
+  tm_polygons(col="grey96", border.col = "grey30",lwd=1.6)+
+  
+  tm_shape(rn,bbox=b4) +
+  tm_raster(style = "cat", 
+            palette = cc,
+            legend.show = F)+
+  
+  pam+
+  tm_shape(east) + tm_borders(lw=3.5, col="navy")+
+  
+  #tm_graticules(labels.size = 1,lines = FALSE)+
+  tm_layout(main.title="D) Eastern",
+            main.title.size = 2.5, 
+            main.title.position = c(0.01,0.98),
+            inner.margins= c(0,0,0,0), 
+            outer.margins = c(0.002,0.002,0.002,0.002))
+
+tmap_save(inmap_b4,filename="inmap_rn_east_d1.png",
+          height=20, width=20, units="cm")
+
+############## 5) Density plot ###########
+#======habitat suitability density (ggridge) for five Bovidae species=====#
+# Create the density plot between the best ensemble model habitat suitability and WDPA protected areas
+
+library(tidyverse)
+library(ggplot2)
+library(ggridges)
+library(cowplot)
+
+#create path
+path<- "/bovidae_enm/result_sample/"
+path_rds<-paste0(path,"/metadata/")
+
+# these dataset were created from extract data of rasters (environmental rasters, ensemble models, binary map, protected area, PCA)
+# Used 2 data columns 1) suitability (0-1); 2) PA category (1-7) for plotting (excluded non-protected area)
+
+# import dataset of the best TSS models
+df_gaur<-readRDS(paste0(path_rds,"Gaur_lm_samp.rds")) # gaur LA no MSDM
+df_banteng<-readRDS(paste0(path_rds,"Banteng_lm_samp.rds")) # banteng LA MSDM
+df_buffalo<-readRDS(paste0(path_rds,"Buffalo_sm_samp.rds")) # buffalo SSA MSDM
+df_serow<-readRDS(paste0(path_rds,"Serow_sm_samp.rds")) # serow SSA MSDM
+df_goral<-readRDS(paste0(path_rds,"Goral_lm_samp.rds")) # goral LA MSDM
+
+# need two columns 1) habitat suitability, 2) WDPA category
+# class should be == factor
+class(df_gaur$iucn)
+class(df_banteng$iucn)
+class(df_buffalo$iucn)
+class(df_serow$iucn)
+class(df_goral$iucn)
+
+# iucn == 8 classes : https://wdpa.s3-eu-west-1.amazonaws.com/WDPA_Manual/English/WDPA_WDOECM_Manual_1_6.pdf
+# 1-6 == WDPA protected areas (PA) category, 7==not report/applicable, 8 == non PA
+table(df_gaur$iucn)
+table(df_banteng$iucn)
+table(df_buffalo$iucn)
+table(df_serow$iucn)
+table(df_goral$iucn)
+
+#color: spectral
+spectral <- c("#9E0142", "#D53E4F", "#F46D43",
+              "#FDAE61", "#FEE08B", "#FFFFBF", "#E6F598",
+              "#ABDDA4", "#66C2A5", "#3288BD", "#5E4FA2")
+
+scale_fill_viridis_c(name = "Suitability")
+
+#set result folder
+setwd("/Users/whorpien/OneDrive - Massey University/R/fig/")
+
+#ggridge plot-------
+
+# density of 7 WDPA PA category and suitability,  exclude unprotected areas
+# 1-6 == WDPA category
+# label the TSS threshold values of ENM models
+# th = is the TSS threshold values for the best models; use to draw a dashline which is a cuf-off of suitable (> threshold) and unsuitable (< threshold) areas
+
+#Gaur lm
+th<-0.49
+
+den_gaur<- 
+  ggplot(df_gaur%>%filter(iucn != "NonPA"), 
+         aes(x = suitability, y = iucn,
+             group = iucn, height = (..count..)))+
+
+  geom_density_ridges_gradient(aes(fill = ..x..), scale = 1, size=0.3,
+                               stat="density") + # using density
+
+  scale_fill_gradientn(colours = c(spectral),name = "Suitability") +
+  
+  labs(title = 'Bos gaurus',
+       x= "Suitability",
+       y="PA category") +
+
+  theme_minimal()+
+
+  #font size  
+  theme( plot.title = element_text(size = 18,face="italic"),
+         axis.title.x = element_text(size = 15),
+         axis.title.y = element_text(size = 15),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=13))+
+
+  geom_vline(xintercept = th, linetype = 2, size = 0.3, color = "black") +
+  annotate(geom = "text", label = th,
+           x = th-0.05, y = 7.5,  size = 5)
+
+png(filename = "den_gaur_lm_prop.png",res=600, units = "cm", width= 20, height=15)
+print(den_gaur)
+dev.off()
+
+#Banteng lm
+th<-0.41
+
+den_banteng<- 
+  ggplot(df_banteng%>%filter(iucn != "NonPA"), 
+         aes(x = suitability, y = iucn,
+         group = iucn, height = (..count..)))+
+
+  geom_density_ridges_gradient(aes(fill = ..x..), scale = 1, size=0.3,
+                               stat="density") + # using density
+
+  scale_fill_gradientn(colours = c(spectral),name = "Suitability") +
+  
+  labs(title = 'Bos javanicus',
+       x= "Suitability",
+       y="PA category") +
+
+  theme_minimal()+
+
+  #font size  
+  theme( plot.title = element_text(size = 18,face="italic"),
+         axis.title.x = element_text(size = 15),
+         axis.title.y = element_text(size = 15),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=13))+
+
+  geom_vline(xintercept = th, linetype = 2, size = 0.3, color = "black") +
+  annotate(geom = "text", label = th,
+           x = th-0.05, y = 7.5,  size = 5)
+
+png(filename = "den_banteng_lm_prop.png",res=600, units = "cm", width= 20, height=15)
+print(den_banteng)
+dev.off()
+
+
+#Buffalo sm
+th<-0.44
+
+den_buffalo<- 
+  ggplot(df_buffalo%>%filter(iucn != "NonPA"), 
+         aes(x = suitability, y = iucn,
+             group = iucn, height = (..count..)))+
+
+  geom_density_ridges_gradient(aes(fill = ..x..), scale = 1, size=0.3,
+                               stat="density") + # using density
+
+  scale_fill_gradientn(colours = c(spectral),name = "Suitability") +
+  
+  labs(title = 'Bubalus arnee',
+       x= "Suitability",
+       y="PA category") +
+
+  theme_minimal()+
+
+  #font size  
+  theme( plot.title = element_text(size = 18,face="italic"),
+         axis.title.x = element_text(size = 15),
+         axis.title.y = element_text(size = 15),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=13))+
+
+  geom_vline(xintercept = th, linetype = 2, size = 0.3, color = "black") +
+  annotate(geom = "text", label = th,
+           x = th-0.05, y = 7.5,  size = 5)
+
+png(filename = "den_buffalo_sm_prop.png",res=600, units = "cm", width= 20, height=15)
+print(den_buffalo)
+dev.off()
+
+#Serow sm
+th<-0.57
+
+den_serow<- 
+  ggplot(df_serow%>%filter(iucn != "NonPA"), 
+         aes(x = suitability, y = iucn,
+             group = iucn, height = (..count..)))+
+
+  geom_density_ridges_gradient(aes(fill = ..x..), scale = 1, size=0.3,
+                               stat="density") + # using density
+
+  scale_fill_gradientn(colours = c(spectral),name = "Suitability") +
+  
+  labs(title = 'Capricornis sumatraensis',
+       x= "Suitability",
+       y="PA category") +
+
+  theme_minimal()+
+
+  #font size  
+  theme( plot.title = element_text(size = 18,face="italic"),
+         axis.title.x = element_text(size = 15),
+         axis.title.y = element_text(size = 15),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=13))+
+
+  geom_vline(xintercept = th, linetype = 2, size = 0.3, color = "black") +
+  annotate(geom = "text", label = th,
+           x = th-0.05, y = 7.5,  size = 5)
+
+png(filename = "den_serow_sm_prop.png",res=600, units = "cm", width= 20, height=15)
+print(den_serow)
+dev.off()
+
+
+#Goral lm
+th<-0.59
+
+den_goral<- 
+  ggplot(df_goral%>%filter(iucn != "NonPA"), 
+         aes(x = suitability, y = iucn,
+             group = iucn, height = (..count..)))+
+
+  geom_density_ridges_gradient(aes(fill = ..x..), scale = 1, size=0.3,
+                               stat="density") + # using density
+
+  scale_fill_gradientn(colours = c(spectral),name = "Suitability") +
+  
+  labs(title = 'Naemorhedus griseus',
+       x= "Suitability",
+       y="PA category") +
+
+  theme_minimal()+
+
+  #font size  
+  theme( plot.title = element_text(size = 18,face="italic"),
+         axis.title.x = element_text(size = 15),
+         axis.title.y = element_text(size = 15),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=13))+
+
+  geom_vline(xintercept = th, linetype = 2, size = 0.3, color = "black") +
+  annotate(geom = "text", label = th,
+           x = th-0.05, y = 7.5,  size = 5)
+
+png(filename = "den_goral_lm_prop.png",res=600, units = "cm", width= 20, height=15)
+print(den_goral)
+dev.off()
+
+#save figures
+
+png(filename= "tot_den_plotgrid.png", res=600, width = 50, height = 30, units = "cm")
+
+plot_grid(den_gaur, den_banteng, den_buffalo, den_serow, den_goral,
+          labels=c("A)", "B)", "C)","D)","E)","F)"), nrow=2,ncol=3)
+dev.off()
