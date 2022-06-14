@@ -19,7 +19,6 @@ rm(list = ls())
 
 
 ## > All the best models from two accessible area types ---------
-
 # Binary raster..select only from best TSS from each small/large accessible area
 # path1<-"/Users/whorpien/OneDrive - Massey University/R/1working/area_calculation/Best_TSS/"
 
@@ -71,7 +70,7 @@ names(richness) <- c("Bos gaurus",
 # SUM binary maps 
 richness_sum <- sum(richness, na.rm = TRUE)
 richness_sum <- crop(richness_sum, extent(lm))%>% 
-  mask(lmac)
+  mask(lm)
 richness_sum
 
 values(richness_sum)[values(richness_sum) < 0] = 0
@@ -81,11 +80,11 @@ plot(richness_sum)
 #plotting categorical
 r<-as.factor(richness_sum)
 table(values(r))
-r
+
 # Declaring raster binary levels (using the goral's LA--highest richness ==4)
 rat <- levels(r)[[1]]
 #rat[["suitability"]] <- c("0","1")
-rat[["suitability"]] <- c("0","1","2","3","4")
+rat[["suitability"]] <- c("0","1","2","3","4") # maximum numbers = 4; minimum = 0
 levels(r) <- rat
 r
 
@@ -100,7 +99,7 @@ raster::writeRaster(x = r,
                     overwrite = TRUE)
 
 ## > plotting & checking the richness map ------------
-# Bovidae richness map figure
+# plotting Bovidae richness map figure
 mypalhot <- viridisLite::turbo(6)
 
 ## export the richness map figure
@@ -115,12 +114,10 @@ dev.off()
 ########################### Thailand richness with all the best --------
 # Cropping process can be skipped and use cropped .tif file (richness_5bov_mix_besttss_tha.tif) in result_sample
 ###########################
-# crop as Thailand extent
+# crop with Thailand extent
 # import Thailand polygon
 #tha<-shapefile("/Users/whorpien/OneDrive - Massey University/GIS data/AdmWorld/gadm36_THA_shp/gadm36_THA_0.shp")
-
 tha<-shapefile("bovidae_enm/data_preparation/adm_border/gadm36_THA_0.shp")
-plot(tha)
 
 rn <- crop(r, extent(tha))%>% 
   mask(tha)
@@ -140,10 +137,10 @@ sacc<-shapefile("/bovidae_enm/data_preparation/adm_border/acc_ecoregion_ssa_disv
 accm<-shapefile("/bovidae_enm/data_preparation/acc/accmsdm/acc_ecoregion_msdm.shp")
 asia<-shapefile("/bovidae_enm/data_preparation/adm_border/asiamap3.shp")
 world<-shapefile("/bovidae_enm/data_preparation/adm_border/World_Countries__Generalized_.shp")
-pa<- shapefile("/bovidae_enm/data_preparation/PA_and_country/AsiaSelect2_largeacc_wdpar_clean.shp")
+pa<- shapefile("/bovidae_enm/data_preparation/PA_and_country/wdpa/AsiaSelect2_largeacc_wdpar_clean.shp")
 
 # focus on PA which species number = 4
-pa_path<-"/bovidae_enm/data_preparation/PA_and_country/"
+pa_path<-"/bovidae_enm/data_preparation/PA_and_country/wdpa/"
 
 dpky<-st_read(paste0(pa_path,"dpky.shp"))
 west<-st_read(paste0(pa_path,"western.shp"))
@@ -153,24 +150,21 @@ pk<-st_read(paste0(pa_path,"PhukhewNumNao.shp"))
 #fix invalid polygon error
 tmap_options(check.and.fix = TRUE)
 
-
-# import Thailand richness map:
+# import richness map, Thailand:
+# rn<-raster("richness_5bov_mix_besttss_tha.tif")
 rn<-raster("/bovidae_enm/result_sample/richness_5bov_mix_besttss_tha.tif")
 
-rn<-raster("richness_5bov_mix_besttss_tha.tif")
-
-#color
-#vv <- max(na.omit(values(rnc)))+1
+#color options
+#color=viridis
 #cc <- viridisLite::mako (vv,direction =1) 
 
-#***color = mako with red
+#color=mako with red
 #cc<-c("#0B0405FF","#395D9CFF", "#3E9BFEFF","#60CEACFF", "#DEF5E5FF","#c03100")
 
-#Spectral with 0 = grey (This one)
+#cc <- c("-Spectral")
 cc<-c("grey90","#3288BD","#99D594","#FEE08B","#FC8D59","#D53E4F")
 
-# Creating bbox for framing interesting PA: b1,2,3,4,5,6
-
+# Creating bbox for framing interesting PA: b1,2,3,4
 #Western
 b1 = st_bbox(c(xmin = 98, xmax = 99.55,
                ymin = 14.1, ymax = 16.65),
@@ -182,8 +176,6 @@ b2 = st_bbox(c(xmin = 101.2, xmax = 102.05,
                ymin = 15.82, ymax = 17.13),
              crs = st_crs(4326)) %>% 
   st_as_sfc()
-
-
 
 #Khoa Yai (DPKY)
 b3 = st_bbox(c(xmin = 101.1, xmax = 103.26,
@@ -197,9 +189,8 @@ b4 = st_bbox(c(xmin = 101.56, xmax = 102.34,
              crs = st_crs(4326)) %>% 
   st_as_sfc()
 
-#for the best model
-#pk, west, dpky, east (b1-b4)
-
+#Creating richness map
+#with border for 4 PAs: pk, west, dpky, east (b1-b4)
 rnm <- 
   tm_shape(pa,bbox=tha)+
   tm_polygons(col="grey96")+
@@ -250,8 +241,7 @@ rnm <-
   tm_compass(type="arrow",size= 1.5,text.size = 1.5 ,position=c(0.01,0.08))+
   tm_scale_bar(breaks = c(0, 100, 200),position=c(0.01,0.01),text.size = 1.5)
 
-# creating inset map
-#ref: https://github.com/Robinlovelace/geocompr/issues/532 
+# proportion function of inset map; ref: https://github.com/Robinlovelace/geocompr/issues/532  
 norm_dim <- function(obj) {
   bbox <- st_bbox(obj)
   
@@ -264,29 +254,24 @@ norm_dim <- function(obj) {
   c("w" = w, "h" = h)
 }
 
-# creating the main map and inset map viewports
-#large acc bbox
+#creating the main map and inset map viewports
 main_w <- norm_dim(rn)[["w"]]
 main_h <- norm_dim(rn)[["h"]]
-
-#asia bbox
 ins_w <- norm_dim(rn)[["w"]]
 ins_h <- norm_dim(rn)[["h"]]
 
 main_vp <- viewport(x = 0.5, y = 0.5,
                     width = unit(main_w, "snpc"), height = unit(main_h, "snpc"),
                     name = "main")
-
-# using "cm" ratio to ensure inset map offsets the main map border by 0.5 cm
-# x=apart from left side, y=apart from bottom
+# x = apart from left side, y = apart from bottom
 ins_vp<- viewport(x=0.78,y=0.32,
                   width = unit(ins_w, "snpc") *0.3, 
                   height = unit(ins_h, "snpc")*0.3)
-
+#creating polygon border
 bthai= bb_poly(tha,projection=4326)
 
-#zoom in map
-#import LA richness for viewport:
+# creating inset map
+# import the richness map for viewport:
 rnla<-raster("/bovidae_enm/result_sample/richness_5bov_mix_besttss.tif")
 
 inmap_rn <-  
@@ -294,7 +279,6 @@ inmap_rn <-
   tm_raster(style = "cat", 
             palette = cc,
             legend.show = F)+
-  
   tm_shape(asia)+
   tm_polygons(border.col = "grey5", 
               lwd = 0.2,
@@ -307,26 +291,28 @@ inmap_rn <-
 # printing maps
 grid.newpage()
 
-#print(richness)
 print(rnm, vp = main_vp)
 pushViewport(main_vp)
 print(inmap_rn, vp = ins_vp)
 
 #tmap save
-#the best TSS
-tmap_save(rnm,filename="/Users/whorpien/OneDrive - Massey University/R/RichnessMap/Richness_thai.png",
+
+#fig<-"/bovidae_enm/fig/"
+#setwd(fig)
+
+tmap_save(rnm,filename="Richness_thai.png",
           dpi=600, insets_tm=inmap_rn, insets_vp=ins_vp,
           height=40, width=25, units="cm")
 
 
-#plot :: zoom in map
+#plot :: zoom in PA 
 pam<-
   tm_shape(asia,bbox=tha)+ 
   tm_borders(col="grey10",lwd=1.5)+
   tm_shape(pa,bbox=tha)+
   tm_borders(col = "grey30",lwd = 1.6)
 
-#set result wd
+#set result working directory
 setwd("/bovidae_enm/fig/")
 # Western PA
 inmap_b1<-
@@ -369,7 +355,6 @@ inmap_b2<-
 
 tmap_save(inmap_b2,filename="inmap_rn_PhuKhieo_NamNao_b2.png",
           height=25, width=25, units="cm")
-
 
 #Dong Phayayen-Khao Yai
 inmap_b3<-
@@ -416,4 +401,3 @@ inmap_b4<-
 
 tmap_save(inmap_b4,filename="inmap_rn_east_d1.png",
           height=20, width=20, units="cm")
-
