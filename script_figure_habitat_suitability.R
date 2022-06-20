@@ -1095,7 +1095,7 @@ library(cowplot)
 
 #create path
 path<- "/bovidae_enm/result_sample/"
-path_rds<-paste0(path,"/metadata/")
+path_rds<-paste0(path,"/dataset_combine/")
 
 # these dataset were created from extract data of rasters (environmental rasters, ensemble models, binary map, protected area, PCA)
 # Used 2 data columns 1) suitability (0-1); 2) PA category (1-7) for plotting (excluded non-protected area)
