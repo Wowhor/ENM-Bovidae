@@ -14,7 +14,7 @@ These codes are contain the some parts of data from the paper:
 We were using the package [ENMTML](https://github.com/andrefaa/ENMTML) for model building.
 
 # How to use these scripts:
- - download the dataset: [
+ - download the dataset: [Google drive
 ](https://drive.google.com/drive/u/2/folders/1Zp-2At0YeP9QZKxtOb4yGundLvU4VdFW)
       * folders and subfolder structure: 
         * 1) data_preparation: the dataset use for modelling
