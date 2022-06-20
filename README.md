@@ -1,5 +1,3 @@
-#27 April 2022
-
 # Code for creating Ecological Niche Models (ENMs) of 5 wild Bovidae species. 
  * *Bos gaurus* (Gaur)
  * *Bos javanicus* (Banteng)
