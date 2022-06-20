@@ -223,8 +223,8 @@ for (i in sp) {
   df_la10_list[[i]]<-df_la10
   
   #saving -------
-  saveRDS(df_ssa10_list[[i]], file = paste0(nam[[i]],"_ssa.rds")) 
-  saveRDS(df_la10_list[[i]], file = paste0(nam[[i]],"_la.rds")) 
+  saveRDS(df_ssa10_list[[i]], file = paste0("df_",nam[[i]],"_ssa.rds")) 
+  saveRDS(df_la10_list[[i]], file = paste0("df_"nam[[i]],"_la.rds")) 
   
   # done :)
   
