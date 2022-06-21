@@ -1086,7 +1086,7 @@ tmap_save(inmap_b4,filename="inmap_rn_east_d1.png",
 
 ############## 5) Density plot ###########
 #======habitat suitability density (ggridge) for five Bovidae species=====#
-# Create the density plot between the best ensemble model habitat suitability and WDPA protected areas
+# Creating the density plot between the best ensemble model habitat suitability and WDPA protected areas
 
 library(tidyverse)
 library(ggplot2)
@@ -1094,20 +1094,19 @@ library(ggridges)
 library(cowplot)
 
 #create path
-path<- "/bovidae_enm/result_sample/"
-path_rds<-paste0(path,"/dataset_combine/")
+path<- "/bovidae_enm/result_sample/dataset_combine/"
 
-# these dataset were created from extract data of rasters (environmental rasters, ensemble models, binary map, protected area, PCA)
-# Used 2 data columns 1) suitability (0-1); 2) PA category (1-7) for plotting (excluded non-protected area)
+# these dataset were created from extract data of rasters (environmental rasters, ensemble models, binary map, IUCN protected area)
+# Used 2 data columns 1) suitability (0-1); 2) iucn (1-7) for plotting (excluded non-protected area)
 
 # import dataset of the best TSS models
-df_gaur<-readRDS(paste0(path_rds,"Gaur_lm_samp.rds")) # gaur LA no MSDM
-df_banteng<-readRDS(paste0(path_rds,"Banteng_lm_samp.rds")) # banteng LA MSDM
-df_buffalo<-readRDS(paste0(path_rds,"Buffalo_sm_samp.rds")) # buffalo SSA MSDM
-df_serow<-readRDS(paste0(path_rds,"Serow_sm_samp.rds")) # serow SSA MSDM
-df_goral<-readRDS(paste0(path_rds,"Goral_lm_samp.rds")) # goral LA MSDM
+df_gaur<-readRDS(paste0(path,"df_gaur_la.rds")) # gaur LA no MSDM
+df_banteng<-readRDS(paste0(path,"df_banteng_la.rds")) # banteng LA MSDM
+df_buffalo<-readRDS(paste0(path,"df_buffalo_ssa.rds")) # buffalo SSA MSDM
+df_serow<-readRDS(paste0(path,"df_serow_ssa.rds")) # serow SSA MSDM
+df_goral<-readRDS(paste0(path,"df_goral_la.rds")) # goral LA MSDM
 
-# need two columns 1) habitat suitability, 2) WDPA category
+# need two columns 1) habitat suitability, 2) IUCN protected areas 
 # class should be == factor
 class(df_gaur$iucn)
 class(df_banteng$iucn)
@@ -1131,7 +1130,8 @@ spectral <- c("#9E0142", "#D53E4F", "#F46D43",
 scale_fill_viridis_c(name = "Suitability")
 
 #set result folder
-setwd("/Users/whorpien/OneDrive - Massey University/R/fig/")
+setwd("/bovidae_enm/")
+
 
 #ggridge plot-------
 
@@ -1140,9 +1140,11 @@ setwd("/Users/whorpien/OneDrive - Massey University/R/fig/")
 # label the TSS threshold values of ENM models
 # th = is the TSS threshold values for the best models; use to draw a dashline which is a cuf-off of suitable (> threshold) and unsuitable (< threshold) areas
 
-#Gaur lm
+#Gaur No MSDM models --------------
+#TSS threshold 
 th<-0.49
 
+#plotting density
 den_gaur<- 
   ggplot(df_gaur%>%filter(iucn != "NonPA"), 
          aes(x = suitability, y = iucn,
@@ -1175,9 +1177,11 @@ png(filename = "den_gaur_lm_prop.png",res=600, units = "cm", width= 20, height=1
 print(den_gaur)
 dev.off()
 
-#Banteng lm
+#Banteng MSDM LA models ------------------
+#TSS threshold 
 th<-0.41
 
+#plotting density
 den_banteng<- 
   ggplot(df_banteng%>%filter(iucn != "NonPA"), 
          aes(x = suitability, y = iucn,
@@ -1211,9 +1215,11 @@ print(den_banteng)
 dev.off()
 
 
-#Buffalo sm
+#Buffalo MSDM SSA models -----------------
+#TSS threshold 
 th<-0.44
 
+#plotting density
 den_buffalo<- 
   ggplot(df_buffalo%>%filter(iucn != "NonPA"), 
          aes(x = suitability, y = iucn,
@@ -1246,9 +1252,11 @@ png(filename = "den_buffalo_sm_prop.png",res=600, units = "cm", width= 20, heigh
 print(den_buffalo)
 dev.off()
 
-#Serow sm
+#Serow No MSDM SSA models -----------------
+#TSS threshold 
 th<-0.57
 
+#plotting density
 den_serow<- 
   ggplot(df_serow%>%filter(iucn != "NonPA"), 
          aes(x = suitability, y = iucn,
@@ -1282,9 +1290,11 @@ print(den_serow)
 dev.off()
 
 
-#Goral lm
+#Goral MSDM LA models -------------------
+#TSS threshold 
 th<-0.59
 
+#plotting density
 den_goral<- 
   ggplot(df_goral%>%filter(iucn != "NonPA"), 
          aes(x = suitability, y = iucn,
@@ -1317,8 +1327,7 @@ png(filename = "den_goral_lm_prop.png",res=600, units = "cm", width= 20, height=
 print(den_goral)
 dev.off()
 
-#save figures
-
+#save figures with cowplot::plot_grid
 png(filename= "tot_den_plotgrid.png", res=600, width = 50, height = 30, units = "cm")
 
 plot_grid(den_gaur, den_banteng, den_buffalo, den_serow, den_goral,
