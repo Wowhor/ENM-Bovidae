@@ -66,7 +66,7 @@ var_list_ssa
 
 #making occurrence data list
 #path4<-"/Users/whorpien/OneDrive - Massey University/R/1working/occurrence"
-path4<-"/bovidae_enm/"
+path4<-"/bovidae_enm/data_preparation/"
 setwd(path4)
 
 oblist<- list.files(path = path4,pattern = ".*.txt")%>%
@@ -75,7 +75,7 @@ str(oblist)
 
 #Protected Area raster (CRS = WGS84)
 #path5 <-"/Users/whorpien/OneDrive - Massey University/R/1working/area_calculation/PA/"
-path5<-"/bovidae_enm/data_preparation/PA_and_country"
+path5<-"/bovidae_enm/data_preparation/PA_and_country/"
 dir(path5)
 setwd(path5)
 
@@ -103,11 +103,13 @@ df_ssa10_list<-list()
 df_la10_list<-list()
 
 set.seed(111)
+
 #setwd and creating target directory
-#dir.create(paste0(path, "/metadata"))
-#result path
 #path_rds<-"/Users/whorpien/OneDrive - Massey University/R/1working/test/"
-path_rds<-"..result folder here.."
+
+path_rds<-"/bovidae_enm/merge"
+dir.create(path_rds)
+setwd(path_rds)
 
 #Starting loop--------
 for (i in sp) {
@@ -224,7 +226,7 @@ for (i in sp) {
   
   #saving -------
   saveRDS(df_ssa10_list[[i]], file = paste0("df_",nam[[i]],"_ssa.rds")) 
-  saveRDS(df_la10_list[[i]], file = paste0("df_"nam[[i]],"_la.rds")) 
+  saveRDS(df_la10_list[[i]], file = paste0("df_",nam[[i]],"_la.rds")) 
   
   # done :)
   
