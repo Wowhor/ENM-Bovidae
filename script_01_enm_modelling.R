@@ -106,9 +106,9 @@ gc()
 # Gaur SSA without MSDM  ----------------------
 
 # occurrence data path
-d_occ <- file.path(d_ex,"bg_test.txt")
+d_occ <- file.path(d_ex,"data_preparation/bg_test.txt")
 
-occ<- read.table(file.path(d_ex, 'bg_test.txt'),header = T)
+occ<- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'),header = T)
 
 str(occ)
 
@@ -158,7 +158,7 @@ gc()
 # occurrence data path
 d_occ <- file.path(d_ex,"data_preparation/bg_test.txt")
 
-occ<- read.table(file.path(d_ex, 'bg_test.txt'),header = T)
+occ<- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'),header = T)
 
 str(occ)
 
@@ -206,6 +206,10 @@ gc()
 
 # occurrence data path
 d_occ <- file.path(d_ex,"data_preparation/bg_test.txt")
+
+occ<- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'),header = T)
+
+str(occ)
 
 # 28 environmental variables path
 d_env <- file.path(d_ex, "data_preparation/env/env_la")
