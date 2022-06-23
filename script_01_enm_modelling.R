@@ -113,14 +113,14 @@ occ<- read.table(file.path(d_ex, 'bg_test.txt'),header = T)
 str(occ)
 
 # 28 environmental variables path
-d_env <- file.path(d_ex, "envgaur")
+d_env <- file.path(d_ex, "data_preparation/env/envgaur")
 dir(d_env)
 
 # check accessible area shapefile:
-plot(shapefile(file.path(d_ex,"accgaur/gaur_acc_disv_2.shp")))
+plot(shapefile(file.path(d_ex,"data_preparation/acc/accgaur/gaur_acc_disv_2.shp")))
 
 # species specific accessible area shapefile path
-m_path <- file.path(d_ex,"accgaur/gaur_acc_disv_2.shp") 
+m_path <- file.path(d_ex,"data_preparation/acc/accgaur/gaur_acc_disv_2.shp") 
 
 # Gaur SSA without MSDM OBR 
 ENMTML(pred_dir = d_env, 
