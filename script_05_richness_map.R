@@ -57,7 +57,7 @@ plot(rcs)
 #crop as large accessible area
 #lm<-shapefile("/Users/whorpien/OneDrive - Massey University/GIS data/SpData/acc_ecoregion_la_disv_cropfinalmodel.shp")
 
-lm<-shapefile("/bovidae_enm/data_preparation/acc/accmsdm/acc_ecoregion_msdm.shp")
+lm<-shapefile("/bovidae_enm/data_preparation/acc/acc_la/acc_ecoregion_msdm.shp")
 plot(lm)
 
 richness<-raster::stack (rbg,rbj,rba,rcs,rng)
