@@ -225,7 +225,7 @@ m_path <- file.path(d_ex,"data_preparation/acc/acc_la/acc_ecoregion_msdm.shp")
 # Gaur LA without MSDM
 ENMTML(pred_dir = d_env, 
        proj_dir = NULL, 
-       result_dir = "ResultGaurTest_SSA_nomsdm", 
+       result_dir = "ResultGaurTest_LA_nomsdm", 
        occ_file = d_occ,
        sp = 'species', 
        x = 'x', 
