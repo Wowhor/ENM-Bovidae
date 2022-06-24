@@ -43,7 +43,7 @@ big
 # import Protected Area WDPA for LA (CRS = WGS84) [These files were from polygons to rasters using rasterize]
 # file name: "PA_la.tif"
 
-pal<- raster ("/bovidae_enm/data_preparation/PA_and_countryla/PA_la.tif")
+pal<- raster ("/bovidae_enm/data_preparation/PA_and_country/PA_la.tif")
 
 #check resolution: should be true
 res(pal)==res(big[[1]])
@@ -328,8 +328,6 @@ for (i in 1:length(sm)){
 }
 
 #########binary map & country######### 
-
-
 # LA Models -------------
 path <- "/bovidae_enm/result_sample/binary"
 setwd(path)
