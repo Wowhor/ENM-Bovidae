@@ -13,7 +13,8 @@ We used the package [ENMTML](https://github.com/andrefaa/ENMTML) for model build
 
 # How to use these scripts:
  - download the dataset: [Google Drive](https://drive.google.com/drive/folders/1tKMkeltE1eSnrmTh4obpIPjYEJaJTChX?usp=sharing) 
-      #Warning Note#: These files on Google Drive are large (size = 9.8 GB), and could be slow when downloaded. 
+      # Warning note: These are large files  (9.8 GB) and could be slow when downloaded. 
+   
       * folders and subfolder structure: 
         * 1) data_preparation: the dataset use for modelling
              * 1.1 `acc`: the polygons (.shp) of accessible areas, it contains 6 subfolders large accessible areas (named: acc_la), and the others for species-specific accessible areas (accbanteng, accbuffalo, accgaur, accserow, accgoral). Selecting the accessible areas using [ecoregions](https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world)
@@ -26,5 +27,6 @@ We used the package [ENMTML](https://github.com/andrefaa/ENMTML) for model build
              * 2.1 `binary`: The best binary model of the habitat suitability (.tif).
              * 2.2 `ensembles`: The best ensemble models of the habitat suitability (.tif).
              * 2.3 `dataset_combine`: The dataset extracting and combining from rasters results, contains habitat suitability values (binary and probability), protected areas category, environmental variables, occurrence data (from gbif.org).   
- - setwd() for setting up the working directory 
- - run the scripts according to the numerical order
+ - Unzip the downloaded folder
+ - Set up working directory in R, before running the code
+ - Run the scripts according to the numerical order
