@@ -13,7 +13,7 @@ We used the package [ENMTML](https://github.com/andrefaa/ENMTML) for model build
 
 # How to use these scripts:
  - download the dataset: [Google Drive](https://drive.google.com/drive/folders/1tKMkeltE1eSnrmTh4obpIPjYEJaJTChX?usp=sharing) 
-      # Warning note: These are large files  (9.8 GB) and could be slow when downloaded. 
+   **Warning note: These are large files  (9.8 GB) and could be slow when downloaded. 
    
       * folders and subfolder structure: 
         * 1) data_preparation: the dataset use for modelling
