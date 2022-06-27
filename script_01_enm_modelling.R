@@ -1,8 +1,12 @@
-# ecological model for five Bovidae species in Thailand.
-# 
-# This can be applied to other occurrence dataset 
-# This code perform in R version 4.0.1 
-# Using ENMTML package for modelling [https://github.com/andrefaa/ENMTML] 
+# ----------------------------------------------------------------------
+# ecological model for five Bovidae species in Thailand
+# Code from: Horpiencharoen et al. 
+# Mapping threatened Thai Bovidae species provides opportunities for improved conservation outcomes in Asia 
+# R version used: 4.0.1 
+# ----------------------------------------------------------------------
+
+# This workflow can be adapted to other occurrence datasets 
+# We use ENMTML package for modelling [https://github.com/andrefaa/ENMTML] 
 # 1) Bos gaurus 
 # 2) Bos javanicus 
 # 3) Bubalus arnee 
@@ -18,9 +22,10 @@ library(raster)
 library(dplyr)
 library(openxlsx)
 
-# Download the sample dataset and files for modelling here:https://drive.google.com/drive/folders/1tKMkeltE1eSnrmTh4obpIPjYEJaJTChX?usp=sharing 
+# Download the sample dataset and files for modelling here:
+# https://drive.google.com/drive/folders/1tKMkeltE1eSnrmTh4obpIPjYEJaJTChX?usp=sharing 
 # 
-# Files are in the folder "data_preparation"
+# Data files are in the folder "data_preparation" folder
 # We used 3 components: Occurrence data (this code used bg_test.txt), environmental variables, accessible area (for restricting the species distribution)
 # 1) occurrence data (sample of dataset from gbif.org):      
 #       - bg_test.txt = Gaur,
@@ -37,17 +42,20 @@ library(openxlsx)
 #       - folder 'acc' is contained SSA and LA shapefile for spatial restriction
 #             - accgaur, accbanteng, accbuffalo, accserow, accgoral are SSA that selected from ecoregions based on literature review and IUCN polygon
 #             - acc_la is a LA which use for all five species 
-# create 4 models (SSA with spatially restriction, SSA without spatially restriction, LA with spatially restriction, and LA without spatially restriction)
+# We create 4 models for each species (SSA with spatially restriction, SSA without spatially restriction, LA with spatially restriction, and LA without spatially restriction)
 
 
-# 1) Start from set up working directory -----------------
+# 1) Start from setting up your working directory -----------------
 # path<-"/Users/whorpien/Library/CloudStorage/OneDrive-MasseyUniversity/R/1working/"
 
-path<-"./bovidae_enm/"
+# Data folder location assumes you start RStudio from clicking on ENM-Bovidae.R through RStudio:
+
+path <-"../bovidae_enm/"
 
 setwd(path)
 
-d_ex <- file.path(getwd())
+d_ex <- file.path(getwd()) 
+
 d_ex
 
 # 2) SSA Modelling ---------------------------
@@ -56,9 +64,10 @@ d_ex
 
 # species occurrence data contain three columns: species,x,y
 # occurrence data path
+
 d_occ <- file.path(d_ex,"data_preparation/bg_test.txt")
 
-occ<- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'),header = T)
+occ <- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'),header = T)
 
 str(occ)
 
@@ -71,7 +80,6 @@ plot(shapefile(file.path(d_ex,"data_preparation/acc/accgaur/gaur_acc_disv_2.shp"
 
 # species specific accessible area shapefile path
 m_path <- file.path(d_ex,"data_preparation/acc/accgaur/gaur_acc_disv_2.shp") 
-
 
 # - Gaur SSA MSDM with spatially restriction (MSDM) OBR
 ENMTML(pred_dir = d_env, 
@@ -99,14 +107,14 @@ ENMTML(pred_dir = d_env,
        extrapolation = FALSE, 
        cores = 2)
        
-# clean memmory garbage
+# clean memory garbage
 gc()
 
 # Next
 # Gaur SSA without MSDM  ----------------------
 
 # occurrence data path
-d_occ <- file.path(d_ex,"data_preparation/bg_test.txt")
+d_occ <- file.path(d_ex, "data_preparation/bg_test.txt")
 
 occ<- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'),header = T)
 
@@ -148,7 +156,7 @@ ENMTML(pred_dir = d_env,
        extrapolation = FALSE, 
        cores = 2)
        
-# clean memmory garbage
+# clean memory garbage
 gc()
 
 # 3) LA modelling --------------------------------
@@ -199,7 +207,7 @@ ENMTML(pred_dir = d_env,
        extrapolation = FALSE, 
        cores = 2)
        
-# clean memmory garbage       
+# clean up memory       
 gc()
 
 # Gaur LA without MSDM OBR------------------
@@ -248,5 +256,7 @@ ENMTML(pred_dir = d_env,
        extrapolation = FALSE, 
        cores = 2)
        
-# clean memmory garbage
+# clean up memory
 gc()
+
+# END ---------------------------------------------------------------------
