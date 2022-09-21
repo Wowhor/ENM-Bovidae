@@ -1,20 +1,21 @@
-# Code for creating Ecological Niche Models (ENMs) of 5 wild Bovidae species. 
+# Code for creating Ecological Niche Models (ENMs) for 5 wild Bovidae species. 
+
+Reference: Horpiencharoen et al. *submitted*. Mapping threatened bovids provides opportunities for improved conservation outcomes in Asia.
+
  * *Bos gaurus* (Gaur)
  * *Bos javanicus* (Banteng)
  * *Bubalus arnee* (Wild water buffalo)
  * *Capricornis sumatraensis* (Mainland serow)
  * *Naemorhedus griseus* (Chinese goral)
 
-These codes are contain the some parts of data from the paper: 
-"Mapping threatened Thai Bovidae species provides opportunities for improved conservation outcomes in Asia"
-(unpublishing paper). 
+
 
 We used the package [ENMTML](https://github.com/andrefaa/ENMTML) for model building.
 
 # How to use these scripts:
- - download the dataset: [Google Drive](https://drive.google.com/drive/folders/1tKMkeltE1eSnrmTh4obpIPjYEJaJTChX?usp=sharing) 
+ - Download the dataset: [Google Drive](https://drive.google.com/drive/folders/1tKMkeltE1eSnrmTh4obpIPjYEJaJTChX?usp=sharing) 
    
-   **Warning note: These are large files  (9.8 GB) and could be slow when downloaded.** 
+   **Warning: These are large files  (~9.8 GB) and download can be slow.** 
    
       * folders and subfolder structure: 
         * 1) data_preparation: the dataset use for modelling
@@ -29,5 +30,5 @@ We used the package [ENMTML](https://github.com/andrefaa/ENMTML) for model build
              * 2.2 `ensembles`: The best ensemble models of the habitat suitability (.tif).
              * 2.3 `dataset_combine`: The dataset extracting and combining from rasters results, contains habitat suitability values (binary and probability), protected areas category, environmental variables, occurrence data (from gbif.org).   
  - Unzip the downloaded folder
- - Set up working directory in R, before running the code
+ - Set up working directory in R before running the code
  - Run the scripts according to the numerical order
