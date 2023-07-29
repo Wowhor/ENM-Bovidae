@@ -27,7 +27,7 @@ We used the package [ENMTML](https://github.com/andrefaa/ENMTML) for model build
         * 2) result_sample: Some of the results (habitat suitability maps, richness maps) from modelling, contains 3 subfolders.
              * 2.1 `binary`: The best binary model of the habitat suitability (.tif).
              * 2.2 `ensembles`: The best ensemble models of the habitat suitability (.tif).
-             * 2.3 `dataset_combine`: The dataset extracting and combining from rasters results, contains habitat suitability values (binary and probability), protected areas category, environmental variables, occurrence data (from gbif.org).   
+             * 2.3 `dataset_combine`: The dataset extracting and combining from rasters results, contains habitat suitability values (binary and probability), protected areas category, environmental variables, occurrence data (from gbif.org). Gbif occurrence data can also download here as .csv file. 
  - Unzip the downloaded folder
  - Set up working directory in R, before running the code
  - Run the scripts according to the numerical order
