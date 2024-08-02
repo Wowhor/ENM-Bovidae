@@ -5,6 +5,8 @@
 # R version used: 4.0.1 
 # ----------------------------------------------------------------------
 
+# Script 01 - Build ENM --------
+
 # This workflow can be adapted to other occurrence datasets 
 # We use ENMTML package for modelling [https://github.com/andrefaa/ENMTML] 
 # 1) Bos gaurus 
@@ -33,6 +35,7 @@ library(openxlsx)
 #       - ba_test.txt = Wild water buffalo       
 #       - cs_test.txt = Mainland serow
 #       - ng_test.txt = Chinese goral
+
 # 2) 28 environmental variables: folder name 'env' -> inside contained the environmental variable for each species.
 #       - These files were cropped based on accessible areas (the shapefile of accessible areas are in the data_preperation folder)
 #       - envgaur, envbanteng, envbuffalo, envserow, envgoral are the species-specific accessible area (SSA) which different for each species
@@ -43,15 +46,17 @@ library(openxlsx)
 #             - accgaur, accbanteng, accbuffalo, accserow, accgoral are SSA that selected from ecoregions based on literature review and IUCN polygon
 #             - acc_la is a LA which use for all five species 
 # We create 4 models for each species (SSA with spatially restriction, SSA without spatially restriction, LA with spatially restriction, and LA without spatially restriction)
+# Spatially restriction: reference Mendes et al. (2020; https://doi.org/10.1016/j.ecolmodel.2020.109180)
 
-
+# These are sample codes
 # 1) Start from setting up your working directory -----------------
-# path<-"/Users/whorpien/Library/CloudStorage/OneDrive-MasseyUniversity/R/1working/"
+# path<-"./GitHub/ENM-Bovidae"
 
 # Data folder location assumes you start RStudio from clicking on ENM-Bovidae.R through RStudio:
 
-path <-"../bovidae_enm/"
-
+#path <-"./bovidae_enm"
+path <- "./GitHub/bovidae_enm"
+getwd()
 setwd(path)
 
 d_ex <- file.path(getwd()) 
@@ -76,10 +81,10 @@ d_env <- file.path(d_ex, "data_preparation/env/envgaur")
 dir(d_env)
 
 # check accessible area shapefile:
-plot(shapefile(file.path(d_ex,"data_preparation/acc/accgaur/gaur_acc_disv_2.shp")))
+plot(shapefile(file.path(d_ex, "data_preparation/acc/accgaur/gaur_acc_disv_2.shp")))
 
 # species specific accessible area shapefile path
-m_path <- file.path(d_ex,"data_preparation/acc/accgaur/gaur_acc_disv_2.shp") 
+m_path <- file.path(d_ex, "data_preparation/acc/accgaur/gaur_acc_disv_2.shp") 
 
 # - Gaur SSA MSDM with spatially restriction (MSDM) OBR
 ENMTML(pred_dir = d_env, 
@@ -90,20 +95,20 @@ ENMTML(pred_dir = d_env,
        x = 'x', 
        y = 'y', 
        min_occ = 10,
-       thin_occ=c(method='CELLSIZE'),
+       thin_occ = c(method='CELLSIZE'),
        eval_occ = NULL, 
-       colin_var=c(method ='PCA'), 
+       colin_var = c(method ='PCA'), 
        imp_var = TRUE, 
-       sp_accessible_area = c(method= 'MASK', filepath= m_path ),
-       pseudoabs_method = c(method= 'RND'),    
+       sp_accessible_area = c(method = 'MASK', filepath = m_path ),
+       pseudoabs_method = c(method = 'RND'),    
        pres_abs_ratio = 1, 
-       part = c(method='BOOT', replicates='10', proportion='0.75'),
+       part = c(method = 'BOOT', replicates='10', proportion='0.75'),
        save_part = FALSE, 
        save_final = TRUE,
        algorithm = c("BIO","GLM","GAM","SVM","RDF","MXD","MLK","GAU"), 
-       thr=c(type=c('MAX_TSS')),
-       msdm= c(method='OBR'),
-       ensemble=c(method=c('W_MEAN'), metric='TSS'),
+       thr = c(type = c('MAX_TSS')),
+       msdm = c(method = 'OBR'),
+       ensemble = c(method = c('W_MEAN'), metric = 'TSS'),
        extrapolation = FALSE, 
        cores = 2)
        
@@ -116,7 +121,7 @@ gc()
 # occurrence data path
 d_occ <- file.path(d_ex, "data_preparation/bg_test.txt")
 
-occ<- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'),header = T)
+occ <- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'), header = T)
 
 str(occ)
 
@@ -125,10 +130,10 @@ d_env <- file.path(d_ex, "data_preparation/env/envgaur")
 dir(d_env)
 
 # check accessible area shapefile:
-plot(shapefile(file.path(d_ex,"data_preparation/acc/accgaur/gaur_acc_disv_2.shp")))
+plot(shapefile(file.path(d_ex, "data_preparation/acc/accgaur/gaur_acc_disv_2.shp")))
 
 # species specific accessible area shapefile path
-m_path <- file.path(d_ex,"data_preparation/acc/accgaur/gaur_acc_disv_2.shp") 
+m_path <- file.path(d_ex, "data_preparation/acc/accgaur/gaur_acc_disv_2.shp") 
 
 # Gaur SSA without MSDM OBR 
 ENMTML(pred_dir = d_env, 
@@ -139,9 +144,9 @@ ENMTML(pred_dir = d_env,
        x = 'x', 
        y = 'y', 
        min_occ = 10,
-       thin_occ=c(method='CELLSIZE'),
+       thin_occ = c(method='CELLSIZE'),
        eval_occ = NULL, 
-       colin_var=c(method ='PCA'), 
+       colin_var = c(method ='PCA'), 
        imp_var = TRUE, 
        sp_accessible_area = c(method= 'MASK', filepath= m_path ),
        pseudoabs_method = c(method= 'RND'),    
@@ -150,9 +155,9 @@ ENMTML(pred_dir = d_env,
        save_part = FALSE, 
        save_final = TRUE,
        algorithm = c("BIO","GLM","GAM","SVM","RDF","MXD","MLK","GAU"), 
-       thr=c(type=c('MAX_TSS')),
-       msdm= NULL,
-       ensemble=c(method=c('W_MEAN'), metric='TSS'),
+       thr = c(type = c('MAX_TSS')),
+       msdm = NULL,
+       ensemble = c(method = c('W_MEAN'), metric = 'TSS'),
        extrapolation = FALSE, 
        cores = 2)
        
@@ -166,7 +171,7 @@ gc()
 # occurrence data path
 d_occ <- file.path(d_ex,"data_preparation/bg_test.txt")
 
-occ<- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'),header = T)
+occ <- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'), header = T)
 
 str(occ)
 
@@ -179,7 +184,7 @@ m <-shapefile(file.path(d_ex,"data_preparation/acc/acc_la/acc_ecoregion_msdm.shp
 plot(m)
 
 # large accessible area shapefile path
-m_path <- file.path(d_ex,"data_preparation/acc/acc_la/acc_ecoregion_msdm.shp") 
+m_path <- file.path(d_ex, "data_preparation/acc/acc_la/acc_ecoregion_msdm.shp") 
 
 # Gaur LA with MSDM OBR
 ENMTML(pred_dir = d_env, 
@@ -190,20 +195,20 @@ ENMTML(pred_dir = d_env,
        x = 'x', 
        y = 'y', 
        min_occ = 10,
-       thin_occ=c(method='CELLSIZE'),
+       thin_occ = c(method='CELLSIZE'),
        eval_occ = NULL, 
-       colin_var=c(method ='PCA'), 
+       colin_var = c(method ='PCA'), 
        imp_var = TRUE, 
-       sp_accessible_area = c(method= 'MASK', filepath= m_path ),
-       pseudoabs_method = c(method= 'RND'),    
+       sp_accessible_area = c(method = 'MASK', filepath = m_path ),
+       pseudoabs_method = c(method = 'RND'),    
        pres_abs_ratio = 1, 
-       part = c(method='BOOT', replicates='10', proportion='0.75'),
+       part = c(method ='BOOT', replicates ='10', proportion='0.75'),
        save_part = FALSE, 
        save_final = TRUE,
        algorithm = c("BIO","GLM","GAM","SVM","RDF","MXD","MLK","GAU"), 
-       thr=c(type=c('MAX_TSS')),
-       msdm= c(method='OBR'),
-       ensemble=c(method=c('W_MEAN'), metric='TSS'),
+       thr=c(type = c('MAX_TSS')),
+       msdm = c(method='OBR'),
+       ensemble = c(method = c('W_MEAN'), metric = 'TSS'),
        extrapolation = FALSE, 
        cores = 2)
        
@@ -213,9 +218,9 @@ gc()
 # Gaur LA without MSDM OBR------------------
 
 # occurrence data path
-d_occ <- file.path(d_ex,"data_preparation/bg_test.txt")
+d_occ <- file.path(d_ex, "data_preparation/bg_test.txt")
 
-occ<- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'),header = T)
+occ <- read.table(file.path(d_ex, 'data_preparation/bg_test.txt'), header = T)
 
 str(occ)
 
@@ -224,11 +229,11 @@ d_env <- file.path(d_ex, "data_preparation/env/env_la")
 dir(d_env)
 
 # check mask shapefile:
-m <-shapefile(file.path(d_ex,"data_preparation/acc/acc_la/acc_ecoregion_msdm.shp"))
+m <-shapefile(file.path(d_ex, "data_preparation/acc/acc_la/acc_ecoregion_msdm.shp"))
 plot(m)
 
 # large accessible area shapefile path
-m_path <- file.path(d_ex,"data_preparation/acc/acc_la/acc_ecoregion_msdm.shp") 
+m_path <- file.path(d_ex, "data_preparation/acc/acc_la/acc_ecoregion_msdm.shp") 
 
 # Gaur LA without MSDM
 ENMTML(pred_dir = d_env, 
@@ -239,24 +244,24 @@ ENMTML(pred_dir = d_env,
        x = 'x', 
        y = 'y', 
        min_occ = 10,
-       thin_occ=c(method='CELLSIZE'),
+       thin_occ = c(method ='CELLSIZE'),
        eval_occ = NULL, 
-       colin_var=c(method ='PCA'), 
+       colin_var = c(method ='PCA'), 
        imp_var = TRUE, 
-       sp_accessible_area = c(method= 'MASK', filepath= m_path ),
-       pseudoabs_method = c(method= 'RND'),    
+       sp_accessible_area = c(method = 'MASK', filepath = m_path ),
+       pseudoabs_method = c(method = 'RND'),    
        pres_abs_ratio = 1, 
-       part = c(method='BOOT', replicates='10', proportion='0.75'),
+       part = c(method = 'BOOT', replicates='10', proportion='0.75'),
        save_part = FALSE, 
        save_final = TRUE,
        algorithm = c("BIO","GLM","GAM","SVM","RDF","MXD","MLK","GAU"), 
-       thr=c(type=c('MAX_TSS')),
-       msdm= NULL,
-       ensemble=c(method=c('W_MEAN'), metric='TSS'),
+       thr = c(type = c('MAX_TSS')),
+       msdm = NULL,
+       ensemble = c(method = c('W_MEAN'), metric = 'TSS'),
        extrapolation = FALSE, 
        cores = 2)
        
 # clean up memory
 gc()
-
+rm(list = ls())
 # END ---------------------------------------------------------------------
