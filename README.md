@@ -25,7 +25,7 @@ We used the package [ENMTML](https://github.com/andrefaa/ENMTML) for model build
              * 1.4 `iucn`: IUCN range (.shp) for all the species
              * 1.5 `PA_and_country`: contains the data of countries and [WDPA](https://www.protectedplanet.net/en/thematic-areas/wdpa?tab=WDPA) protected areas boundary (.shp, .tif). 
              * 1.6 `text files` (.txt): some of the occurrence data from the open source ([gbif.org](https://www.gbif.org/)) 
-        * 2) result_sample: Some of the results (habitat suitability maps, richness maps[`.tif`]) from modelling, contains 3 subfolders.
+        * 2) result_sample: Some of the results (habitat suitability maps, richness maps (.tif) from modelling, contains 3 subfolders.
              * 2.1 `binary`: The best binary model of the habitat suitability (.tif).
              * 2.2 `ensembles`: The best ensemble models of the habitat suitability (.tif).
              * 2.3 `dataset_combine`: The dataset extracting and combining from rasters results contains habitat suitability values (binary and probability), protected areas category, environmental variables and observation data.
