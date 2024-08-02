@@ -762,7 +762,7 @@ check <- list()
 
 nam <- c("Gaur", "Banteng", "Buffalo", "Serow", "Goral")
 
-result <- "./result_sample"
+#result <- "./result_sample"
 
 # Calculate suitable areas
 
@@ -880,10 +880,10 @@ for (i in 1:length(tlist)) {
 }  
 
 # Combine dataframe
-df <- bind_rows(zonlist)
-str(df)
+df_thai <- bind_rows(zonlist)
+str(df_thai)
 
-write.xlsx(df, file = "table_area_all_Thai_best.xlsx", row.names = FALSE)
+write.xlsx(df_thai, file = "table_area_all_Thai_best.xlsx", row.names = FALSE)
 
 # Calculate suitable area in  Thai forest (V.2019) -----
 
